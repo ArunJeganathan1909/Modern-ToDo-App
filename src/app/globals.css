@@ -2,20 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Define light theme as default */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --button-bg: #f3f4f6;        /* gray-100 */
+  --button-hover: #e5e7eb;     /* gray-200 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Dark theme variables when .dark class is applied */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --button-bg: #1f2937;        /* gray-800 */
+  --button-hover: #374151;     /* gray-700 */
 }
 
 body {
+  @apply transition-colors duration-300 min-h-screen;
+  background-color: var(--background);
   color: var(--foreground);
-  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }

@@ -1,101 +1,117 @@
-import Image from "next/image";
+"use client";
+
+import useTodos from "./hooks/useTodos";
+import TodoForm from "./components/TodoForm";
+import TodoItem from "./components/TodoItem";
+import FilterBar from "./components/FilterBar";
+import ThemeToggle from "./components/ThemeToggle"; // Add this line
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const {
+    todos,
+    addTodo,
+    toggleComplete,
+    deleteTodo,
+    editTodo,
+    undo,
+    redo,
+    filter,
+    setFilter,
+    search,
+    setSearch,
+    editingId,
+    setEditingId,
+    categoryFilter,
+    setCategoryFilter,
+    setTodos,
+  } = useTodos();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleDragEnd = (result) => {
+    const { destination, source } = result;
+    if (!destination) return;
+
+    const reordered = Array.from(todos);
+    const [moved] = reordered.splice(source.index, 1);
+    reordered.splice(destination.index, 0, moved);
+
+    setTodos(reordered); // You’ll need to expose setTodos in useTodos.js
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen pt-6">
+      <div className="max-w-full sm:max-w-3xl md:max-w-4xl mx-auto p-4 bg-white/80 dark:bg-gray-800/80 shadow-lg rounded-xl">
+        {/* Header Section */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">📝 Todo App</h1>
+          <ThemeToggle />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <TodoForm onAdd={addTodo} />
+        <FilterBar
+          filter={filter}
+          setFilter={setFilter}
+          search={search}
+          setSearch={setSearch}
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
+        />
+
+        {/* Undo/Redo Buttons */}
+        <div className="flex gap-2 justify-end mt-4 mb-2">
+          <button
+            onClick={undo}
+            className="px-3 py-1 rounded bg-blue-200 hover:bg-blue-300 dark:bg-blue-700 dark:hover:bg-blue-800 text-sm"
+          >
+            ⬅ Undo
+          </button>
+          <button
+            onClick={redo}
+            className="px-3 py-1 rounded bg-green-200 hover:bg-green-300 dark:bg-green-700 dark:hover:bg-green-800 text-sm"
+          >
+            Redo ➡
+          </button>
+        </div>
+
+        {/* Todo List with Drag & Drop */}
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="todo-list">
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="space-y-2"
+              >
+                {todos.map((todo, index) => (
+                  <Draggable
+                    key={todo.id}
+                    draggableId={todo.id.toString()}
+                    index={index}
+                  >
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <TodoItem
+                          todo={todo}
+                          onToggle={toggleComplete}
+                          onDelete={deleteTodo}
+                          onEdit={editTodo}
+                          setEditingId={setEditingId}
+                          isEditing={editingId === todo.id}
+                        />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
     </div>
   );
 }
